@@ -19,6 +19,7 @@ from waterplant.store import export_state
 
 from . import checks, history, ops
 from . import describe as describe_module
+from . import rehearsal as rehearsal_module
 from . import simulate as simulate_module
 from . import snapshot as snapshot_module
 from . import telemetry as telemetry_module
@@ -94,7 +95,7 @@ def system(server: "Server", request: Request) -> Response:
 
 
 def history_append(server: "Server", request: Request) -> Response:
-    return history.append(server.runtime.store, request)
+    return history.append(server.runtime.store, request, at=server.runtime.clock())
 
 
 def history_list(server: "Server", request: Request) -> Response:
@@ -285,6 +286,38 @@ def cycle(server: "Server", request: Request) -> Response:
 
 def simulate(server: "Server", request: Request) -> Response:
     return simulate_module.run_simulation(server.runtime, request)
+
+
+def rehearsal_scenario_create(server: "Server", request: Request) -> Response:
+    return rehearsal_module.create_scenario(server, request)
+
+
+def rehearsal_scenarios(server: "Server", request: Request) -> Response:
+    return rehearsal_module.list_scenarios(server, request)
+
+
+def rehearsal_run_start(server: "Server", request: Request) -> Response:
+    return rehearsal_module.start_run(server, request)
+
+
+def rehearsal_run_resume(server: "Server", request: Request) -> Response:
+    return rehearsal_module.resume_run(server, request)
+
+
+def rehearsal_run_replay(server: "Server", request: Request) -> Response:
+    return rehearsal_module.replay_run(server, request)
+
+
+def rehearsal_runs(server: "Server", request: Request) -> Response:
+    return rehearsal_module.list_runs(server, request)
+
+
+def rehearsal_run_steps(server: "Server", request: Request) -> Response:
+    return rehearsal_module.run_steps(server, request)
+
+
+def rehearsal_report(server: "Server", request: Request) -> Response:
+    return rehearsal_module.report(server, request)
 
 
 def ph_state(server: "Server", request: Request) -> Response:

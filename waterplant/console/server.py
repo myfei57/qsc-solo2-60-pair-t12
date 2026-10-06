@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Iterable
+from typing import TYPE_CHECKING, Callable, Iterable
 
 from waterplant.store import Store
 
@@ -12,15 +12,35 @@ from .metrics import Metrics
 from .routes import register_routes
 from .runtime import Runtime
 
+if TYPE_CHECKING:  # pragma: no cover - imported only for type checkers
+    from waterplant.rehearsal import RehearsalEngine
+
 
 class Server:
     """Owns the runtime state and dispatches console requests."""
 
-    def __init__(self, store: Store) -> None:
-        self.runtime = Runtime(store)
+    def __init__(self, store: Store, runtime: Runtime | None = None) -> None:
+        self.runtime = runtime or Runtime(store)
         self.router = Router()
         self.metrics = Metrics()
+        self._rehearsal_engine: RehearsalEngine | None = None
         register_routes(self.router, handlers)
+
+    def rehearsal(self) -> "RehearsalEngine":
+        """Lazily build the offline rehearsal engine for this console.
+
+        The engine keeps every rehearsal artefact in a directory next to the
+        live store and only ever reads the live runtime when a scenario asks
+        for a snapshot base.
+        """
+
+        if self._rehearsal_engine is None:
+            from waterplant.rehearsal import RehearsalEngine
+
+            self._rehearsal_engine = RehearsalEngine(
+                self.runtime, f"{self.runtime.store.path}.rehearsal"
+            )
+        return self._rehearsal_engine
 
     def respond(self, request: Request) -> Response:
         response = self._route(request)

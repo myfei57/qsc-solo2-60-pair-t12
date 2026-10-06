@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from waterplant.store.commands import append_command, load_commands
@@ -13,6 +14,14 @@ from waterplant.store.store import Store
 from .report import AuditState
 
 AUDIT_KEY = "audit:entries"
+
+
+def _wall_clock() -> int:
+    return int(time.time())
+
+
+def _uuid_ids() -> str:
+    return uuid.uuid4().hex
 
 
 @dataclass(frozen=True)
@@ -29,15 +38,27 @@ class Entry:
 
 
 class Auditor:
-    """Records and queries dosing entries."""
+    """Records and queries dosing entries.
 
-    def __init__(self, store: Store) -> None:
+    The clock and id source default to the wall clock and random uuids.
+    Offline rehearsals inject deterministic substitutes so a replayed run
+    produces byte identical entries.
+    """
+
+    def __init__(
+        self,
+        store: Store,
+        clock: Callable[[], int] | None = None,
+        ids: Callable[[], str] | None = None,
+    ) -> None:
         self._store = store
+        self._clock = clock or _wall_clock
+        self._ids = ids or _uuid_ids
 
     def record(self, kind: str, detail: str) -> Entry:
         entry = Entry(
-            id=uuid.uuid4().hex,
-            time=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            id=self._ids(),
+            time=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(self._clock())),
             kind=kind,
             detail=detail,
         )

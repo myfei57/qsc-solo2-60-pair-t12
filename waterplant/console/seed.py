@@ -13,8 +13,12 @@ from waterplant.store import Store, append_event, has_key
 from .history import EVENT_KEY
 
 
-def seed_defaults(store: Store) -> None:
-    """Make sure each mutable component has a usable starting value."""
+def seed_defaults(store: Store, event_at: int | None = None) -> None:
+    """Make sure each mutable component has a usable starting value.
+
+    ``event_at`` pins the seed event timestamp; offline rehearsals pass a
+    logical clock value so a constructed base seeds deterministically.
+    """
 
     calibration = Calibration(store)
     if calibration.current() <= 0:
@@ -43,4 +47,4 @@ def seed_defaults(store: Store) -> None:
     if not has_key(store, WINDOW_KEY):
         trend.set_window(DEFAULT_WINDOW)
 
-    append_event(store, EVENT_KEY, "seed", "defaults")
+    append_event(store, EVENT_KEY, "seed", "defaults", at=event_at)

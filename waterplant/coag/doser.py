@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from waterplant.audit import Auditor
 from waterplant.flow import Calibration
 from waterplant.intake import FlowRepository
@@ -15,10 +17,15 @@ COAGULANT = "coagulant"
 class Doser:
     """Turns a flow reading into a coagulant dose at the current ratio."""
 
-    def __init__(self, store: Store) -> None:
+    def __init__(
+        self,
+        store: Store,
+        clock: Callable[[], int] | None = None,
+        ids: Callable[[], str] | None = None,
+    ) -> None:
         self._flow = FlowRepository(store)
         self._calibration = Calibration(store)
-        self._auditor = Auditor(store)
+        self._auditor = Auditor(store, clock=clock, ids=ids)
 
     @property
     def flow(self) -> FlowRepository:

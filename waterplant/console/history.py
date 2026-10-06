@@ -9,11 +9,11 @@ from .http import Request, RequestError, Response, json_response
 EVENT_KEY = "console:events"
 
 
-def append(store: Store, request: Request) -> Response:
+def append(store: Store, request: Request, at: int | None = None) -> Response:
     kind = request.str_field("kind")
     if not kind:
         raise RequestError(400, "kind is required")
-    append_event(store, EVENT_KEY, kind, request.str_field("value"))
+    append_event(store, EVENT_KEY, kind, request.str_field("value"), at=at)
     return json_response({"appended": True})
 
 

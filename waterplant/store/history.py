@@ -22,10 +22,15 @@ class Event:
         return {"at": self.at, "kind": self.kind, "value": self.value}
 
 
-def append_event(store: Store, key: str, kind: str, value: str) -> None:
-    """Record one event under the supplied list key."""
+def append_event(store: Store, key: str, kind: str, value: str, at: int | None = None) -> None:
+    """Record one event under the supplied list key.
 
-    event = Event(at=int(time.time()), kind=kind, value=value)
+    ``at`` defaults to the wall clock; offline rehearsals pass a logical
+    timestamp so a replayed run records identical events.
+    """
+
+    stamp = int(time.time()) if at is None else int(at)
+    event = Event(at=stamp, kind=kind, value=value)
     append_command(store, key, json.dumps(event.as_dict(), ensure_ascii=False))
 
 

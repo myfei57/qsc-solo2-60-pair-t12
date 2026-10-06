@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from waterplant.audit import Auditor
 from waterplant.clearwell import Well
 from waterplant.store.store import Store
@@ -14,9 +16,14 @@ CHLORINE = "chlorine"
 class Doser:
     """Follows the residual target held by the clear well."""
 
-    def __init__(self, store: Store) -> None:
+    def __init__(
+        self,
+        store: Store,
+        clock: Callable[[], int] | None = None,
+        ids: Callable[[], str] | None = None,
+    ) -> None:
         self._well = Well(store)
-        self._auditor = Auditor(store)
+        self._auditor = Auditor(store, clock=clock, ids=ids)
 
     def current_target(self) -> float:
         """Residual target read fresh from the clear well on every call."""
