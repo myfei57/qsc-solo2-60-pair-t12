@@ -14,9 +14,9 @@ CHLORINE = "chlorine"
 class Doser:
     """Follows the residual target held by the clear well."""
 
-    def __init__(self, store: Store) -> None:
+    def __init__(self, store: Store, auditor: Auditor | None = None) -> None:
         self._well = Well(store)
-        self._auditor = Auditor(store)
+        self._auditor = auditor if auditor is not None else Auditor(store)
 
     def current_target(self) -> float:
         """Residual target read fresh from the clear well on every call."""

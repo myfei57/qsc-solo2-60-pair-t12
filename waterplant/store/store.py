@@ -12,9 +12,11 @@ class Store:
 
     Writes are atomic: the document is written to a sibling temporary file and
     then moved over the target path so a crash cannot leave a partial document.
+    An empty path selects an in-memory store that never touches disk, which is
+    what offline rehearsal sandboxes run against.
     """
 
-    def __init__(self, path: str, data: dict[str, str] | None = None) -> None:
+    def __init__(self, path: str = "", data: dict[str, str] | None = None) -> None:
         self._path = path
         self._data: dict[str, str] = dict(data) if data else {}
         self._lock = threading.RLock()
@@ -79,6 +81,8 @@ class Store:
             self._save_locked()
 
     def _save_locked(self) -> None:
+        if not self._path:
+            return
         raw = json.dumps(self._data, ensure_ascii=False, indent=2, sort_keys=True)
         temporary = f"{self._path}.tmp"
         with open(temporary, "w", encoding="utf-8") as handle:

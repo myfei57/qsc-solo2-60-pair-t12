@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from typing import Callable, Iterable
 
+from waterplant.rehearsal import RehearsalManager
 from waterplant.store import Store
 
 from . import handlers
+from .history import EVENT_KEY
 from .http import Request, RequestError, Response, Router, build_request, error_response
 from .metrics import Metrics
 from .routes import register_routes
@@ -20,6 +22,8 @@ class Server:
         self.runtime = Runtime(store)
         self.router = Router()
         self.metrics = Metrics()
+        registry = Store.open(f"{store.path}.rehearsal") if store.path else Store()
+        self.rehearsal = RehearsalManager(self.runtime, registry, live_event_key=EVENT_KEY)
         register_routes(self.router, handlers)
 
     def respond(self, request: Request) -> Response:

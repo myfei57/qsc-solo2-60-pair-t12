@@ -15,10 +15,10 @@ COAGULANT = "coagulant"
 class Doser:
     """Turns a flow reading into a coagulant dose at the current ratio."""
 
-    def __init__(self, store: Store) -> None:
+    def __init__(self, store: Store, auditor: Auditor | None = None) -> None:
         self._flow = FlowRepository(store)
         self._calibration = Calibration(store)
-        self._auditor = Auditor(store)
+        self._auditor = auditor if auditor is not None else Auditor(store)
 
     @property
     def flow(self) -> FlowRepository:

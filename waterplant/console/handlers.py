@@ -19,6 +19,7 @@ from waterplant.store import export_state
 
 from . import checks, history, ops
 from . import describe as describe_module
+from . import rehearsal as rehearsal_module
 from . import simulate as simulate_module
 from . import snapshot as snapshot_module
 from . import telemetry as telemetry_module
@@ -285,6 +286,34 @@ def cycle(server: "Server", request: Request) -> Response:
 
 def simulate(server: "Server", request: Request) -> Response:
     return simulate_module.run_simulation(server.runtime, request)
+
+
+def rehearsal_list(server: "Server", request: Request) -> Response:
+    return rehearsal_module.rehearsal_list(server, request)
+
+
+def rehearsal_run(server: "Server", request: Request) -> Response:
+    return rehearsal_module.rehearsal_run(server, request)
+
+
+def rehearsal_resume(server: "Server", request: Request) -> Response:
+    return rehearsal_module.rehearsal_resume(server, request)
+
+
+def rehearsal_replay(server: "Server", request: Request) -> Response:
+    return rehearsal_module.rehearsal_replay(server, request)
+
+
+def rehearsal_verify(server: "Server", request: Request) -> Response:
+    return rehearsal_module.rehearsal_verify(server, request)
+
+
+def rehearsal_report(server: "Server", request: Request) -> Response:
+    return rehearsal_module.rehearsal_report(server, request)
+
+
+def rehearsal_audit(server: "Server", request: Request) -> Response:
+    return rehearsal_module.rehearsal_audit(server, request)
 
 
 def ph_state(server: "Server", request: Request) -> Response:

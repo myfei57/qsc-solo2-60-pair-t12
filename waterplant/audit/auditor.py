@@ -6,6 +6,7 @@ import json
 import time
 import uuid
 from dataclasses import dataclass
+from typing import Callable
 
 from waterplant.store.commands import append_command, load_commands
 from waterplant.store.store import Store
@@ -29,15 +30,30 @@ class Entry:
 
 
 class Auditor:
-    """Records and queries dosing entries."""
+    """Records and queries dosing entries.
 
-    def __init__(self, store: Store) -> None:
+    The wall clock and id source are injectable so offline rehearsals can run
+    the same dosing logic against a deterministic logical clock.
+    """
+
+    def __init__(
+        self,
+        store: Store,
+        clock: "Callable[[], str] | None" = None,
+        idgen: "Callable[[], str] | None" = None,
+    ) -> None:
         self._store = store
+        self._clock = clock
+        self._idgen = idgen
 
     def record(self, kind: str, detail: str) -> Entry:
         entry = Entry(
-            id=uuid.uuid4().hex,
-            time=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            id=self._idgen() if self._idgen is not None else uuid.uuid4().hex,
+            time=(
+                self._clock()
+                if self._clock is not None
+                else time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            ),
             kind=kind,
             detail=detail,
         )

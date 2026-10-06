@@ -7,6 +7,8 @@ console can replay or discard pending work.
 
 from __future__ import annotations
 
+from typing import Callable
+
 from waterplant.filter import Bank
 from waterplant.store.commands import append_command, clear_commands, load_commands
 from waterplant.store.store import Store
@@ -22,9 +24,10 @@ SPILL_KEY = "backwash:spill"
 class Controller:
     """Sequences backwash commands against the filter bank."""
 
-    def __init__(self, bank: Bank, store: Store) -> None:
+    def __init__(self, bank: Bank, store: Store, clock: "Callable[[], int] | None" = None) -> None:
         self._bank = bank
         self._store = store
+        self._clock = clock if clock is not None else now_unix
 
     def start(self, bed_id: str) -> None:
         """Close the bed and only then open its drain."""
@@ -35,7 +38,7 @@ class Controller:
     def _drain(self, bed_id: str) -> None:
         if not self._bank.is_closed(bed_id):
             self._store.put(SPILL_KEY, "true")
-        self._store.put(f"{DRAIN_KEY_PREFIX}{bed_id}", str(now_unix()))
+        self._store.put(f"{DRAIN_KEY_PREFIX}{bed_id}", str(self._clock()))
 
     def enqueue(self, bed_id: str) -> None:
         append_command(self._store, COMMAND_KEY, bed_id)
